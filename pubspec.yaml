@@ -1,0 +1,42 @@
+name: flutter_weather_channel
+description: "An old-school TV Weather Channel station app for Flutter."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+  # State management
+  flutter_bloc: ^9.1.0
+  bloc: ^9.0.0
+  equatable: ^2.0.7
+
+  # Networking
+  http: ^1.4.0
+
+  # Location
+  geolocator: ^13.0.2
+  geocoding: ^3.0.0
+  permission_handler: ^11.4.0
+
+  # UI
+  google_fonts: ^6.2.1
+  cached_network_image: ^3.4.1
+
+  # Utilities
+  intl: ^0.20.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  bloc_test: ^10.0.0
+  mocktail: ^1.0.4
+
+flutter:
+  uses-material-design: true
