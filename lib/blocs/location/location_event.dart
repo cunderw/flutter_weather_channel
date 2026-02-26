@@ -15,8 +15,3 @@ class ZipCodeSubmitted extends LocationEvent {
   @override
   List<Object?> get props => [query];
 }
-
-/// User tapped "Use My Location".
-class DeviceLocationRequested extends LocationEvent {
-  const DeviceLocationRequested();
-}

@@ -19,11 +19,6 @@ dependencies:
   # Networking
   http: ^1.4.0
 
-  # Location
-  geolocator: ^13.0.2
-  geocoding: ^3.0.0
-  permission_handler: ^11.4.0
-
   # UI
   google_fonts: ^6.2.1
   cached_network_image: ^3.4.1

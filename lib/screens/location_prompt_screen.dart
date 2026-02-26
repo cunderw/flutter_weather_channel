@@ -5,7 +5,7 @@ import '../blocs/location/location_event.dart';
 import '../blocs/location/location_state.dart';
 import '../config/theme.dart';
 
-/// Initial screen that prompts the user to enter a zip code or use device location.
+/// Initial screen that prompts the user to enter a zip code.
 class LocationPromptScreen extends StatefulWidget {
   const LocationPromptScreen({super.key});
 
@@ -29,10 +29,6 @@ class _LocationPromptScreenState extends State<LocationPromptScreen> {
     if (query.isNotEmpty) {
       context.read<LocationBloc>().add(ZipCodeSubmitted(query));
     }
-  }
-
-  void _useDeviceLocation() {
-    context.read<LocationBloc>().add(const DeviceLocationRequested());
   }
 
   @override
@@ -164,55 +160,6 @@ class _LocationPromptScreenState extends State<LocationPromptScreen> {
                           style: WeatherTextStyles.body(
                             size: 18,
                             weight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Divider
-                    Row(
-                      children: [
-                        const Expanded(
-                          child: Divider(color: WeatherColors.textGray),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Text(
-                            'OR',
-                            style: WeatherTextStyles.body(
-                              color: WeatherColors.textGray,
-                            ),
-                          ),
-                        ),
-                        const Expanded(
-                          child: Divider(color: WeatherColors.textGray),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Use device location
-                    SizedBox(
-                      width: 200,
-                      child: OutlinedButton.icon(
-                        onPressed: _useDeviceLocation,
-                        icon: const Icon(Icons.my_location),
-                        label: Text(
-                          'Use My Location',
-                          style: WeatherTextStyles.body(
-                            size: 16,
-                            color: WeatherColors.textCyan,
-                          ),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: WeatherColors.textCyan,
-                          side: const BorderSide(color: WeatherColors.textCyan),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
                           ),
                         ),
                       ),

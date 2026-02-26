@@ -8,7 +8,6 @@ import 'models/location.dart';
 import 'screens/location_prompt_screen.dart';
 import 'screens/tv_weather_screen.dart';
 import 'services/geocoding_service.dart';
-import 'services/location_service.dart';
 import 'services/weather_service.dart';
 
 class WeatherChannelApp extends StatelessWidget {
@@ -19,16 +18,13 @@ class WeatherChannelApp extends StatelessWidget {
     return MultiRepositoryProvider(
       providers: [
         RepositoryProvider(create: (_) => GeocodingService()),
-        RepositoryProvider(create: (_) => LocationService()),
         RepositoryProvider(create: (_) => WeatherService()),
       ],
       child: MultiBlocProvider(
         providers: [
           BlocProvider(
-            create: (ctx) => LocationBloc(
-              geocodingService: ctx.read<GeocodingService>(),
-              locationService: ctx.read<LocationService>(),
-            ),
+            create: (ctx) =>
+                LocationBloc(geocodingService: ctx.read<GeocodingService>()),
           ),
           BlocProvider(
             create: (ctx) =>
