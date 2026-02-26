@@ -44,6 +44,8 @@ class ContentCycler extends StatelessWidget {
           key: const ValueKey('radar'),
           radarUrl: weatherState.radarUrl,
           locationName: location.displayName,
+          latitude: location.latitude,
+          longitude: location.longitude,
         );
       case ActivePanel.textSummary:
         return TextSummaryPanel(
