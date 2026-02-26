@@ -41,11 +41,11 @@ class _TextSummaryPanelState extends State<TextSummaryPanel> {
     _scrollController
         .animateTo(maxScroll, duration: duration, curve: Curves.linear)
         .then((_) {
-      if (mounted && _scrollController.hasClients) {
-        _scrollController.jumpTo(0);
-        _startScrolling();
-      }
-    });
+          if (mounted && _scrollController.hasClients) {
+            _scrollController.jumpTo(0);
+            _startScrolling();
+          }
+        });
   }
 
   @override
@@ -70,7 +70,20 @@ class _TextSummaryPanelState extends State<TextSummaryPanel> {
               color: WeatherColors.textCyan,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
+          Container(
+            height: 2,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  WeatherColors.textCyan,
+                  WeatherColors.textCyan.withValues(alpha: 0.3),
+                  Colors.transparent,
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
           Expanded(
             child: SingleChildScrollView(
               controller: _scrollController,
@@ -122,7 +135,9 @@ class _TextSummaryPanelState extends State<TextSummaryPanel> {
 
       if (f.daily.length > 1) {
         final tomorrow = f.daily[1];
-        final tmrwDesc = WeatherIcons.description(tomorrow.weatherCode).toLowerCase();
+        final tmrwDesc = WeatherIcons.description(
+          tomorrow.weatherCode,
+        ).toLowerCase();
         buffer.writeln();
         buffer.writeln(
           "Tomorrow: $tmrwDesc with a high of ${tomorrow.high.round()}°F "

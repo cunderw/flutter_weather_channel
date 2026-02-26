@@ -33,6 +33,21 @@ class RadarPanel extends StatelessWidget {
               color: WeatherColors.textCyan,
             ),
           ),
+          const SizedBox(height: 4),
+          Container(
+            height: 2,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.transparent,
+                  WeatherColors.textCyan.withValues(alpha: 0.5),
+                  WeatherColors.textCyan,
+                  WeatherColors.textCyan.withValues(alpha: 0.5),
+                  Colors.transparent,
+                ],
+              ),
+            ),
+          ),
           const SizedBox(height: 8),
           Text(
             locationName,

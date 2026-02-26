@@ -38,12 +38,19 @@ class _WeatherInfoBarState extends State<WeatherInfoBar> {
     final dateStr = DateFormat('EEEE, MMMM d, yyyy').format(_now);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: const BoxDecoration(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
         color: WeatherColors.infoBarOverlay,
-        border: Border(
-          bottom: BorderSide(color: WeatherColors.textYellow, width: 1),
+        border: const Border(
+          bottom: BorderSide(color: WeatherColors.textYellow, width: 2),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: WeatherColors.textYellow.withValues(alpha: 0.15),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [

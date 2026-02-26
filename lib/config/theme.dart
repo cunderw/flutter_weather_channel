@@ -32,6 +32,7 @@ class WeatherColors {
 }
 
 /// Text styles replicating the retro TV Weather Channel aesthetic.
+/// All text uses pixelated / monospace fonts for a low-res broadcast look.
 class WeatherTextStyles {
   WeatherTextStyles._();
 
@@ -40,31 +41,46 @@ class WeatherTextStyles {
     double size = 48,
     Color color = WeatherColors.textYellow,
   }) {
-    return GoogleFonts.vt323(fontSize: size, color: color, letterSpacing: 2);
+    return GoogleFonts.vt323(
+      fontSize: size,
+      color: color,
+      letterSpacing: 2,
+      shadows: [
+        Shadow(color: color.withValues(alpha: 0.5), blurRadius: 6),
+      ],
+    );
   }
 
-  /// Body text — condensed sans-serif for labels and descriptions.
+  /// Body text — also uses the pixel font for full retro consistency.
   static TextStyle body({
     double size = 16,
     Color color = WeatherColors.textWhite,
     FontWeight weight = FontWeight.normal,
   }) {
-    return GoogleFonts.robotoCondensed(
-      fontSize: size,
+    return GoogleFonts.vt323(
+      fontSize: size + 4, // VT323 reads smaller, bump slightly
       color: color,
       fontWeight: weight,
+      shadows: [
+        Shadow(color: color.withValues(alpha: 0.3), blurRadius: 2),
+      ],
     );
   }
 
-  /// Heading — larger condensed sans-serif.
+  /// Heading — larger pixel font with stronger glow.
   static TextStyle heading({
     double size = 24,
     Color color = WeatherColors.textCyan,
   }) {
-    return GoogleFonts.robotoCondensed(
-      fontSize: size,
+    return GoogleFonts.vt323(
+      fontSize: size + 6,
       color: color,
       fontWeight: FontWeight.bold,
+      letterSpacing: 3,
+      shadows: [
+        Shadow(color: color.withValues(alpha: 0.6), blurRadius: 8),
+        Shadow(color: color.withValues(alpha: 0.3), blurRadius: 16),
+      ],
     );
   }
 
@@ -73,10 +89,14 @@ class WeatherTextStyles {
     double size = 18,
     Color color = WeatherColors.textWhite,
   }) {
-    return GoogleFonts.robotoCondensed(
-      fontSize: size,
+    return GoogleFonts.vt323(
+      fontSize: size + 4,
       color: color,
       fontWeight: FontWeight.w500,
+      letterSpacing: 1,
+      shadows: [
+        Shadow(color: color.withValues(alpha: 0.4), blurRadius: 3),
+      ],
     );
   }
 }

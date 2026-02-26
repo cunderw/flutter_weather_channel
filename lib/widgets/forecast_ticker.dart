@@ -53,12 +53,19 @@ class _ForecastTickerState extends State<ForecastTicker> {
     final timeFormat = DateFormat('ha'); // e.g. "3PM"
 
     return Container(
-      height: 56,
-      decoration: const BoxDecoration(
+      height: 60,
+      decoration: BoxDecoration(
         color: WeatherColors.tickerBlue,
-        border: Border(
-          top: BorderSide(color: WeatherColors.textYellow, width: 2),
+        border: const Border(
+          top: BorderSide(color: WeatherColors.textYellow, width: 3),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: WeatherColors.textYellow.withValues(alpha: 0.2),
+            blurRadius: 8,
+            offset: const Offset(0, -2),
+          ),
+        ],
       ),
       child: ListView.builder(
         controller: _scrollController,

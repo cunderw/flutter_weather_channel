@@ -56,25 +56,59 @@ class CurrentConditionsPanel extends StatelessWidget {
   }
 
   Widget _buildDataGrid() {
-    return Table(
-      defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+    return Column(
       children: [
-        _dataRow('Humidity', '${weather.humidity}%', 'Wind',
-            '${weather.windDirectionCompass} ${weather.windSpeed.round()} mph'),
-        _dataRow('Pressure', '${weather.pressure.round()} mb', 'UV Index',
-            weather.uvIndex.toStringAsFixed(1)),
-        _dataRow('Visibility', '${weather.visibilityMiles.toStringAsFixed(1)} mi',
-            '', ''),
+        // Thin yellow horizontal rule like broadcast lower-third graphics
+        Container(
+          height: 2,
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.transparent,
+                WeatherColors.textYellow.withValues(alpha: 0.6),
+                WeatherColors.textYellow,
+                WeatherColors.textYellow.withValues(alpha: 0.6),
+                Colors.transparent,
+              ],
+            ),
+          ),
+        ),
+        Table(
+          defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+          children: [
+            _dataRow(
+              'Humidity',
+              '${weather.humidity}%',
+              'Wind',
+              '${weather.windDirectionCompass} ${weather.windSpeed.round()} mph',
+            ),
+            _dataRow(
+              'Pressure',
+              '${weather.pressure.round()} mb',
+              'UV Index',
+              weather.uvIndex.toStringAsFixed(1),
+            ),
+            _dataRow(
+              'Visibility',
+              '${weather.visibilityMiles.toStringAsFixed(1)} mi',
+              '',
+              '',
+            ),
+          ],
+        ),
       ],
     );
   }
 
-  TableRow _dataRow(String label1, String value1, String label2, String value2) {
+  TableRow _dataRow(
+    String label1,
+    String value1,
+    String label2,
+    String value2,
+  ) {
     return TableRow(
-      children: [
-        _dataCell(label1, value1),
-        _dataCell(label2, value2),
-      ],
+      children: [_dataCell(label1, value1), _dataCell(label2, value2)],
     );
   }
 
