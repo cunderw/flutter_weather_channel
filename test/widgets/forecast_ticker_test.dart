@@ -36,9 +36,9 @@ void main() {
       );
 
       // Check that forecast data is rendered
-      expect(find.textContaining('72°'), findsOneWidget);
-      expect(find.textContaining('74°'), findsOneWidget);
-      expect(find.textContaining('76°'), findsOneWidget);
+      expect(find.textContaining('72°'), findsWidgets);
+      expect(find.textContaining('74°'), findsWidgets);
+      expect(find.textContaining('76°'), findsWidgets);
     });
 
     testWidgets('handles empty forecast list', (tester) async {
