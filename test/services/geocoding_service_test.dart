@@ -49,36 +49,21 @@ void main() {
       expect(result.state, 'Illinois');
     });
 
-    test(
-      'falls back to Nominatim for US zip code when Open-Meteo fails',
-      () async {
-        // Arrange
-        const zipCode = '66207';
-        final openMeteoEmptyResponse = {'generationtime_ms': 0.21648407};
-        final nominatimResponse = [
-          {
-            'lat': '38.9822',
-            'lon': '-94.7151',
-            'address': {'city': 'Shawnee', 'state': 'Kansas'},
+    test('uses Nominatim directly for US zip codes', () async {
+      // Arrange
+      const zipCode = '66207';
+      final nominatimResponse = [
+        {
+          'lat': '38.9822',
+          'lon': '-94.7151',
+          'address': {
+            'city': 'Shawnee',
+            'state': 'Kansas',
           },
         ];
 
-        // First call to Open-Meteo returns empty
-        when(
-          () => mockClient.get(
-            any(
-              that: predicate<Uri>(
-                (uri) => uri.toString().contains('geocoding-api'),
-              ),
-            ),
-          ),
-        ).thenAnswer(
-          (_) async => http.Response(json.encode(openMeteoEmptyResponse), 200),
-        );
-
-        // Second call to Nominatim returns results
-        when(
-          () => mockClient.get(
+      // Nominatim returns results (no Open-Meteo call should be made)
+      when(() => mockClient.get(
             any(
               that: predicate<Uri>(
                 (uri) => uri.toString().contains('nominatim'),
@@ -100,31 +85,25 @@ void main() {
         expect(result.state, 'Kansas');
         expect(result.zip, '66207');
 
-        // Verify both APIs were called
-        verify(() => mockClient.get(any())).called(1);
-        verify(
-          () => mockClient.get(any(), headers: any(named: 'headers')),
-        ).called(1);
-      },
-    );
+      // Verify only Nominatim was called (Open-Meteo should be skipped)
+      verify(() => mockClient.get(
+            any(
+              that: predicate<Uri>((uri) => uri.toString().contains('nominatim')),
+            ),
+            headers: any(named: 'headers'),
+          )).called(1);
+      verifyNever(() => mockClient.get(
+            any(
+              that: predicate<Uri>(
+                  (uri) => uri.toString().contains('geocoding-api')),
+            ),
+          ));
+    });
 
-    test('throws exception when both APIs fail for zip code', () async {
+    test('throws exception when Nominatim fails for zip code', () async {
       // Arrange
       const zipCode = '99999';
-      final openMeteoEmptyResponse = {'generationtime_ms': 0.21648407};
       final nominatimEmptyResponse = <Map<String, dynamic>>[];
-
-      when(
-        () => mockClient.get(
-          any(
-            that: predicate<Uri>(
-              (uri) => uri.toString().contains('geocoding-api'),
-            ),
-          ),
-        ),
-      ).thenAnswer(
-        (_) async => http.Response(json.encode(openMeteoEmptyResponse), 200),
-      );
 
       when(
         () => mockClient.get(
@@ -154,10 +133,9 @@ void main() {
       expect(() => service.search(query), throwsA(isA<GeocodingException>()));
     });
 
-    test('recognizes various formats as zip codes or city names', () async {
-      // Arrange - Test that 5-digit inputs trigger Nominatim fallback
+    test('routes zip codes directly to Nominatim', () async {
+      // Arrange - Test that 5-digit inputs go directly to Nominatim
       const validZipCode = '12345';
-      final openMeteoEmptyResponse = {'generationtime_ms': 0.21648407};
       final nominatimResponse = [
         {
           'lat': '42.8142',
@@ -166,43 +144,34 @@ void main() {
         },
       ];
 
-      when(
-        () => mockClient.get(
-          any(
-            that: predicate<Uri>(
-              (uri) => uri.toString().contains('geocoding-api'),
+      when(() => mockClient.get(
+            any(
+              that: predicate<Uri>((uri) => uri.toString().contains('nominatim')),
             ),
-          ),
-        ),
-      ).thenAnswer(
-        (_) async => http.Response(json.encode(openMeteoEmptyResponse), 200),
-      );
-
-      when(
-        () => mockClient.get(
-          any(
-            that: predicate<Uri>((uri) => uri.toString().contains('nominatim')),
-          ),
-          headers: any(named: 'headers'),
-        ),
-      ).thenAnswer(
-        (_) async => http.Response(json.encode(nominatimResponse), 200),
-      );
+            headers: any(named: 'headers'),
+          )).thenAnswer((_) async => http.Response(
+            json.encode(nominatimResponse),
+            200,
+          ));
 
       // Act - Search with valid 5-digit zip code
       final result = await service.search(validZipCode);
 
-      // Assert - Should successfully use Nominatim fallback
+      // Assert - Should go directly to Nominatim (not Open-Meteo)
       expect(result.zip, validZipCode);
-      // Verify Nominatim was called (indicating zip code was recognized)
-      verify(
-        () => mockClient.get(
-          any(
-            that: predicate<Uri>((uri) => uri.toString().contains('nominatim')),
-          ),
-          headers: any(named: 'headers'),
-        ),
-      ).called(1);
+      verify(() => mockClient.get(
+            any(
+              that: predicate<Uri>((uri) => uri.toString().contains('nominatim')),
+            ),
+            headers: any(named: 'headers'),
+          )).called(1);
+      // Verify Open-Meteo was NOT called
+      verifyNever(() => mockClient.get(
+            any(
+              that: predicate<Uri>(
+                  (uri) => uri.toString().contains('geocoding-api')),
+            ),
+          ));
     });
   });
 }
