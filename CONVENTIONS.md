@@ -703,6 +703,34 @@ BlocBuilder<WeatherBloc, WeatherState>(
 
 ## Testing
 
+**All new features and bug fixes must include tests.** This project follows test-driven development principles.
+
+### Test Coverage Requirements
+
+- **Services**: 100% coverage of public methods (success, error, edge cases)
+- **BLoCs/Cubits**: Test initial state, all events, state transitions, timer cleanup
+- **Models**: Test constructors, `fromJson`, computed properties, equality
+- **Widgets**: Test rendering, data display, user interactions (where applicable)
+- **Utilities**: Test all public functions with various inputs
+
+### Running Tests
+
+```bash
+flutter test                    # Run all tests
+flutter test test/services/     # Run specific test directory
+flutter test --coverage         # Generate coverage report
+flutter analyze                 # Run static analysis
+dart format .                   # Format code
+```
+
+### Test Organization
+
+- Tests mirror `lib/` structure under `test/`
+- One test file per implementation file
+- Use descriptive `group` and `test` names
+- Group related tests together
+- Use `setUp` and `tearDown` for common setup/cleanup
+
 ### Unit Tests (Services)
 
 ```dart
@@ -954,10 +982,11 @@ crashes. Now defaults to empty string.
 
 Before submitting code:
 
-- [ ] All tests pass
-- [ ] No analyzer warnings
+- [ ] **All tests pass** (`flutter test`)
+- [ ] **New code has comprehensive tests** (services, BLoCs, models, widgets)
+- [ ] **Test coverage is adequate** (>80% for new code)
+- [ ] No analyzer warnings (`flutter analyze`)
 - [ ] Code is formatted (`dart format`)
-- [ ] New code has tests
 - [ ] Public APIs have doc comments
 - [ ] Constants extracted (no magic numbers/strings)
 - [ ] Theme colors/styles used (no hardcoded values)

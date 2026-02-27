@@ -62,16 +62,17 @@ lib/
 - Always call `super.close()` when overriding `close()` for cleanup
 
 **BLoC Example:**
+
 ```dart
 class WeatherBloc extends Bloc<WeatherEvent, WeatherState> {
   final WeatherService _weatherService;
-  
+
   WeatherBloc({required WeatherService weatherService})
     : _weatherService = weatherService,
       super(const WeatherInitial()) {
     on<FetchWeather>(_onFetchWeather);
   }
-  
+
   Future<void> _onFetchWeather(
     FetchWeather event,
     Emitter<WeatherState> emit,
@@ -106,6 +107,7 @@ class WeatherBloc extends Bloc<WeatherEvent, WeatherState> {
 - Include computed properties for derived values (e.g., `displayName`)
 
 **Model Example:**
+
 ```dart
 class Location extends Equatable {
   final double latitude;
@@ -113,7 +115,7 @@ class Location extends Equatable {
   final String city;
   final String state;
   final String? zip;
-  
+
   const Location({
     required this.latitude,
     required this.longitude,
@@ -121,7 +123,7 @@ class Location extends Equatable {
     this.state = '',
     this.zip,
   });
-  
+
   factory Location.fromJson(Map<String, dynamic> json) {
     return Location(
       latitude: (json['latitude'] as num).toDouble(),
@@ -130,10 +132,10 @@ class Location extends Equatable {
       state: json['admin1'] as String? ?? '',
     );
   }
-  
+
   @override
   List<Object?> get props => [latitude, longitude, city, state, zip];
-  
+
   String get displayName {
     if (state.isNotEmpty) return '$city, $state';
     return city;
@@ -151,23 +153,24 @@ class Location extends Equatable {
 - Use records for multiple return values: `({Weather weather, Forecast forecast})`
 
 **Service Example:**
+
 ```dart
 class WeatherService {
   final http.Client _client;
-  
+
   WeatherService({http.Client? client}) : _client = client ?? http.Client();
-  
+
   Future<({Weather weather, Forecast forecast})> fetchWeather({
     required double lat,
     required double lon,
   }) async {
     final uri = Uri.parse('${ApiConstants.openMeteoForecastUrl}?latitude=$lat&longitude=$lon...');
     final response = await _client.get(uri);
-    
+
     if (response.statusCode != 200) {
       throw WeatherException('API returned status ${response.statusCode}');
     }
-    
+
     final data = json.decode(response.body) as Map<String, dynamic>;
     return (weather: Weather.fromJson(data), forecast: Forecast.fromJson(data));
   }
@@ -176,7 +179,7 @@ class WeatherService {
 class WeatherException implements Exception {
   final String message;
   WeatherException(this.message);
-  
+
   @override
   String toString() => 'WeatherException: $message';
 }
@@ -193,12 +196,13 @@ class WeatherException implements Exception {
 - Use descriptive widget names that indicate purpose
 
 **Widget Example:**
+
 ```dart
 class CurrentConditionsPanel extends StatelessWidget {
   final Weather weather;
-  
+
   const CurrentConditionsPanel({super.key, required this.weather});
-  
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -215,7 +219,7 @@ class CurrentConditionsPanel extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildDataGrid() { /* ... */ }
 }
 ```
@@ -243,13 +247,198 @@ class CurrentConditionsPanel extends StatelessWidget {
 
 ### Testing
 
-- Unit tests for services (mock HTTP with `mocktail`)
-- BLoC tests with `bloc_test` package
-- Widget tests for individual panels
-- Test files mirror `lib/` structure under `test/`
-- Use descriptive test names with `group` and `test` blocks
-- Mock external dependencies (HTTP client, services)
+**All new code must include tests.** The project uses `flutter_test`, `bloc_test`, and `mocktail`.
+
+#### Test Structure
+
+Tests mirror the `lib/` directory structure:
+
+```
+test/
+├── blocs/
+│   ├── weather/
+│   │   └── weather_bloc_test.dart
+│   ├── location/
+│   │   └── location_bloc_test.dart
+│   └── display/
+│       └── display_cubit_test.dart
+├── models/
+│   ├── location_test.dart
+│   ├── weather_test.dart
+│   └── forecast_test.dart
+├── services/
+│   ├── weather_service_test.dart
+│   └── geocoding_service_test.dart
+├── utils/
+│   └── weather_icons_test.dart
+└── widgets/
+    ├── current_conditions_panel_test.dart
+    ├── forecast_ticker_test.dart
+    └── weather_info_bar_test.dart
+```
+
+#### Service Tests
+
+- Mock HTTP client using `mocktail`
 - Test both success and error cases
+- Verify proper exception throwing
+- Test edge cases (null values, empty responses)
+- Use descriptive test names
+
+**Service Test Example:**
+
+```dart
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:http/http.dart' as http;
+
+class MockClient extends Mock implements http.Client {}
+
+void main() {
+  group('WeatherService', () {
+    late WeatherService service;
+    late MockClient mockClient;
+
+    setUp(() {
+      mockClient = MockClient();
+      service = WeatherService(client: mockClient);
+    });
+
+    test('fetchWeather returns data on success', () async {
+      when(() => mockClient.get(any())).thenAnswer(
+        (_) async => http.Response('{"current": {...}}', 200),
+      );
+
+      final result = await service.fetchWeather(lat: 40, lon: -89);
+
+      expect(result.weather.temperature, 72.5);
+    });
+
+    test('fetchWeather throws on error', () {
+      when(() => mockClient.get(any())).thenAnswer(
+        (_) async => http.Response('Error', 500),
+      );
+
+      expect(
+        () => service.fetchWeather(lat: 40, lon: -89),
+        throwsA(isA<WeatherException>()),
+      );
+    });
+  });
+}
+```
+
+#### BLoC Tests
+
+- Use `bloc_test` package for testing BLoCs
+- Test initial state
+- Test each event handler
+- Verify state transitions
+- Test timer cleanup in `close()`
+- Mock injected services
+
+**BLoC Test Example:**
+
+```dart
+import 'package:bloc_test/bloc_test.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+
+class MockWeatherService extends Mock implements WeatherService {}
+
+void main() {
+  group('WeatherBloc', () {
+    late WeatherService mockWeatherService;
+
+    setUp(() {
+      mockWeatherService = MockWeatherService();
+    });
+
+    test('initial state is WeatherInitial', () {
+      final bloc = WeatherBloc(weatherService: mockWeatherService);
+      expect(bloc.state, const WeatherInitial());
+      bloc.close();
+    });
+
+    blocTest<WeatherBloc, WeatherState>(
+      'emits [WeatherLoading, WeatherLoaded] on success',
+      build: () {
+        when(() => mockWeatherService.fetchWeather(
+              lat: any(named: 'lat'),
+              lon: any(named: 'lon'),
+            )).thenAnswer((_) async => (weather: mockWeather, forecast: mockForecast));
+
+        return WeatherBloc(weatherService: mockWeatherService);
+      },
+      act: (bloc) => bloc.add(const FetchWeather(latitude: 40, longitude: -89)),
+      expect: () => [
+        const WeatherLoading(),
+        isA<WeatherLoaded>(),
+      ],
+    );
+  });
+}
+```
+
+#### Widget Tests
+
+- Use `testWidgets` for widget testing
+- Wrap widgets in `MaterialApp` for testing
+- Test widget rendering and layout
+- Verify text display and formatting
+- Test user interactions if applicable
+- Handle stateful widget timers and animations
+
+**Widget Test Example:**
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+  group('CurrentConditionsPanel', () {
+    testWidgets('displays temperature correctly', (tester) async {
+      const weather = Weather(...);
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: CurrentConditionsPanel(weather: weather),
+          ),
+        ),
+      );
+
+      expect(find.text('72°F'), findsOneWidget);
+    });
+  });
+}
+```
+
+#### Model Tests
+
+- Test `fromJson` constructors with valid data
+- Test `fromJson` with missing/null fields
+- Test computed properties (e.g., `displayName`, `windDirectionCompass`)
+- Test equality (Equatable behavior)
+- Test edge cases (zero values, boundary conditions)
+
+#### Running Tests
+
+```bash
+flutter test                    # Run all tests
+flutter test test/services/     # Run service tests only
+flutter test --coverage         # Generate coverage report
+flutter analyze                 # Run static analysis
+```
+
+#### Test Quality Standards
+
+- Every public method must have tests
+- Test both happy path and error cases
+- Aim for >80% code coverage
+- Tests must pass before merging code
+- Use meaningful assertions with descriptive messages
+- Clean up resources in `tearDown` (timers, controllers, etc.)
 
 ### Constants
 
@@ -260,10 +449,11 @@ class CurrentConditionsPanel extends StatelessWidget {
 - Group related constants together
 
 **Constants Example:**
+
 ```dart
 class TimingConstants {
   TimingConstants._();
-  
+
   static const Duration panelCycleDuration = Duration(seconds: 8);
   static const Duration panelFadeDuration = Duration(milliseconds: 800);
   static const Duration weatherRefreshInterval = Duration(minutes: 10);
@@ -325,6 +515,7 @@ Organize imports in this specific order, with blank lines separating each group:
 Within each group, imports are consecutive (no blank lines between them).
 
 **Example:**
+
 ```dart
 import 'dart:async';
 import 'dart:convert';
@@ -343,23 +534,27 @@ import '../utils/constants.dart';
 ### Build & Test Commands
 
 **Setup:**
+
 ```bash
 flutter pub get                    # Install dependencies
 ```
 
 **Code Quality:**
+
 ```bash
 flutter analyze                    # Run static analysis (must pass)
 dart format lib/ test/             # Format code before committing
 ```
 
 **Testing:**
+
 ```bash
 flutter test                       # Run all tests
 flutter test path/to/test.dart     # Run specific test file
 ```
 
 **Running:**
+
 ```bash
 flutter run                        # Run on connected device/emulator
 ```
@@ -375,6 +570,7 @@ Optional longer explanation. Wrap at 72 characters.
 ```
 
 **Types:**
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation only
@@ -382,3 +578,6 @@ Optional longer explanation. Wrap at 72 characters.
 - `refactor`: Code restructure without behavior change
 - `test`: Adding/updating tests
 - `chore`: Maintenance (dependencies, build, etc.)
+- **Write tests for all new code before merging**
+- Run tests locally before pushing: `flutter test`
+- Ensure all tests pass before submitting PRs
