@@ -108,4 +108,4 @@ These documents should be updated when:
 
 **Last Updated:** 2026-02-27
 
-**Total Documentation:** ~2,000 lines (~52 KB)
+**Total Documentation:** ~2,100 lines (~60 KB)
