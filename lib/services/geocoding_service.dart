@@ -3,9 +3,9 @@ import 'package:http/http.dart' as http;
 import '../models/location.dart';
 import '../utils/constants.dart';
 
-/// Converts a zip code or city name to geographic coordinates
-/// using the Open-Meteo Geocoding API for city names and
-/// Nominatim API for US zip codes.
+/// Converts a zip code or city name to geographic coordinates.
+/// Uses Open-Meteo Geocoding API first, falling back to Nominatim
+/// for US zip codes when Open-Meteo returns no results.
 class GeocodingService {
   final http.Client _client;
 
@@ -13,19 +13,42 @@ class GeocodingService {
 
   /// Searches for a location by [query] (zip code or city name).
   /// Returns the first matching [Location], or throws on failure.
+  ///
+  /// For zip codes, Open-Meteo is tried first. If it returns no results,
+  /// Nominatim is used as a fallback.
   Future<Location> search(String query) async {
     // Trim whitespace once at the start
     final trimmedQuery = query.trim();
+    final isZip = _isUSZipCode(trimmedQuery);
 
-    // If query is a US zip code, use Nominatim directly for accurate results
-    if (_isUSZipCode(trimmedQuery)) {
-      return await _searchByZipCode(trimmedQuery);
+    // Always try Open-Meteo first
+    try {
+      final location = await _searchOpenMeteo(trimmedQuery);
+      // Attach zip code to result if the query was a zip
+      if (isZip) {
+        return Location(
+          latitude: location.latitude,
+          longitude: location.longitude,
+          city: location.city,
+          state: location.state,
+          zip: trimmedQuery,
+        );
+      }
+      return location;
+    } on GeocodingException {
+      // If it's a zip code, fall back to Nominatim
+      if (isZip) {
+        return await _searchByZipCode(trimmedQuery);
+      }
+      rethrow;
     }
+  }
 
-    // Otherwise, use Open-Meteo for city/place name search
+  /// Searches using the Open-Meteo Geocoding API.
+  Future<Location> _searchOpenMeteo(String query) async {
     final uri = Uri.parse(
       '${ApiConstants.openMeteoGeocodingUrl}'
-      '?name=${Uri.encodeComponent(trimmedQuery)}&count=1&language=en&format=json',
+      '?name=${Uri.encodeComponent(query)}&count=1&language=en&format=json',
     );
 
     final response = await _client.get(uri);
@@ -38,7 +61,7 @@ class GeocodingService {
     final results = data['results'] as List<dynamic>?;
 
     if (results == null || results.isEmpty) {
-      throw GeocodingException('No results found for "$trimmedQuery"');
+      throw GeocodingException('No results found for "$query"');
     }
 
     final first = results[0] as Map<String, dynamic>;
@@ -58,9 +81,10 @@ class GeocodingService {
       '&country=US&format=json&limit=1',
     );
 
-    final response = await _client.get(uri, headers: {
-      'User-Agent': 'FlutterWeatherChannel/1.0',
-    });
+    final response = await _client.get(
+      uri,
+      headers: {'User-Agent': 'FlutterWeatherChannel/1.0'},
+    );
 
     if (response.statusCode != 200) {
       throw GeocodingException(
@@ -126,7 +150,8 @@ class GeocodingService {
 
     final address = json['address'] as Map<String, dynamic>?;
     if (address != null) {
-      city = (address['city'] as String?) ??
+      city =
+          (address['city'] as String?) ??
           (address['town'] as String?) ??
           (address['village'] as String?) ??
           (address['hamlet'] as String?) ??
