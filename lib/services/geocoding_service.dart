@@ -77,9 +77,47 @@ class GeocodingService {
 
   /// Converts a Nominatim response to a [Location] object.
   Location _locationFromNominatim(Map<String, dynamic> json, String zip) {
-    final lat = double.parse(json['lat'] as String);
-    final lon = double.parse(json['lon'] as String);
+    final dynamic rawLat = json['lat'];
+    final dynamic rawLon = json['lon'];
 
+    if (rawLat == null || rawLon == null) {
+      throw GeocodingException(
+        'Nominatim response missing latitude/longitude for zip "$zip"',
+      );
+    }
+
+    double lat;
+    double lon;
+
+    try {
+      if (rawLat is num) {
+        lat = rawLat.toDouble();
+      } else if (rawLat is String) {
+        lat = double.parse(rawLat);
+      } else {
+        throw GeocodingException(
+          'Unexpected latitude type "${rawLat.runtimeType}" for zip "$zip"',
+        );
+      }
+
+      if (rawLon is num) {
+        lon = rawLon.toDouble();
+      } else if (rawLon is String) {
+        lon = double.parse(rawLon);
+      } else {
+        throw GeocodingException(
+          'Unexpected longitude type "${rawLon.runtimeType}" for zip "$zip"',
+        );
+      }
+    } on FormatException catch (e) {
+      throw GeocodingException(
+        'Failed to parse coordinates from Nominatim for zip "$zip": ${e.message}',
+      );
+    } on TypeError catch (e) {
+      throw GeocodingException(
+        'Invalid coordinate types from Nominatim for zip "$zip": $e',
+      );
+    }
     // Extract city and state from display_name or address
     String city = 'Unknown';
     String state = '';
