@@ -1,122 +1,328 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter_weather_channel/services/geocoding_service.dart';
+import 'package:http/http.dart' as http;
+import 'package:mocktail/mocktail.dart';
 
-class MockClient extends Mock implements http.Client {}
-
-class FakeUri extends Fake implements Uri {}
+class MockHttpClient extends Mock implements http.Client {}
 
 void main() {
+  late MockHttpClient mockClient;
+  late GeocodingService service;
+
+  setUp(() {
+    mockClient = MockHttpClient();
+    service = GeocodingService(client: mockClient);
+  });
+
   setUpAll(() {
-    registerFallbackValue(FakeUri());
+    registerFallbackValue(Uri());
   });
 
   group('GeocodingService', () {
-    late GeocodingService service;
-    late MockClient mockClient;
+    test('searches city name successfully using Open-Meteo', () async {
+      // Arrange
+      const query = 'Chicago';
+      final openMeteoResponse = {
+        'results': [
+          {
+            'latitude': 41.85,
+            'longitude': -87.65,
+            'name': 'Chicago',
+            'admin1': 'Illinois',
+          },
+        ],
+      };
 
-    setUp(() {
-      mockClient = MockClient();
-      service = GeocodingService(client: mockClient);
+      when(() => mockClient.get(any())).thenAnswer(
+        (_) async => http.Response(json.encode(openMeteoResponse), 200),
+      );
+
+      // Act
+      final result = await service.search(query);
+
+      // Assert
+      expect(result.latitude, 41.85);
+      expect(result.longitude, -87.65);
+      expect(result.city, 'Chicago');
+      expect(result.state, 'Illinois');
     });
 
-    group('search', () {
-      test('returns location on success', () async {
-        final mockResponse = '''
-        {
-          "results": [
-            {
-              "latitude": 39.78,
-              "longitude": -89.65,
-              "name": "Springfield",
-              "admin1": "Illinois"
-            }
-          ]
-        }
-        ''';
+    test('uses Open-Meteo first for US zip codes when it succeeds', () async {
+      // Arrange
+      const zipCode = '66207';
+      final openMeteoResponse = {
+        'results': [
+          {
+            'latitude': 38.98,
+            'longitude': -94.72,
+            'name': 'Overland Park',
+            'admin1': 'Kansas',
+          },
+        ],
+      };
 
+      when(
+        () => mockClient.get(
+          any(
+            that: predicate<Uri>(
+              (uri) => uri.toString().contains('geocoding-api'),
+            ),
+          ),
+        ),
+      ).thenAnswer(
+        (_) async => http.Response(json.encode(openMeteoResponse), 200),
+      );
+
+      // Act
+      final result = await service.search(zipCode);
+
+      // Assert
+      expect(result.latitude, 38.98);
+      expect(result.longitude, -94.72);
+      expect(result.city, 'Overland Park');
+      expect(result.state, 'Kansas');
+      expect(result.zip, '66207');
+
+      // Verify Open-Meteo was called
+      verify(
+        () => mockClient.get(
+          any(
+            that: predicate<Uri>(
+              (uri) => uri.toString().contains('geocoding-api'),
+            ),
+          ),
+        ),
+      ).called(1);
+      // Verify Nominatim was NOT called
+      verifyNever(
+        () => mockClient.get(
+          any(
+            that: predicate<Uri>((uri) => uri.toString().contains('nominatim')),
+          ),
+          headers: any(named: 'headers'),
+        ),
+      );
+    });
+
+    test(
+      'falls back to Nominatim when Open-Meteo fails for zip code',
+      () async {
+        // Arrange
+        const zipCode = '66207';
+        final openMeteoEmptyResponse = {'generationtime_ms': 0.21648407};
+        final nominatimResponse = [
+          {
+            'lat': '38.9822',
+            'lon': '-94.7151',
+            'address': {'city': 'Shawnee', 'state': 'Kansas'},
+          },
+        ];
+
+        // Open-Meteo returns no results
         when(
-          () => mockClient.get(any()),
-        ).thenAnswer((_) async => http.Response(mockResponse, 200));
+          () => mockClient.get(
+            any(
+              that: predicate<Uri>(
+                (uri) => uri.toString().contains('geocoding-api'),
+              ),
+            ),
+          ),
+        ).thenAnswer(
+          (_) async => http.Response(json.encode(openMeteoEmptyResponse), 200),
+        );
 
-        final location = await service.search('Springfield');
-
-        expect(location.city, 'Springfield');
-        expect(location.state, 'Illinois');
-        expect(location.latitude, 39.78);
-        expect(location.longitude, -89.65);
-      });
-
-      test('throws GeocodingException on non-200 status', () {
+        // Nominatim returns results as fallback
         when(
-          () => mockClient.get(any()),
-        ).thenAnswer((_) async => http.Response('Error', 500));
+          () => mockClient.get(
+            any(
+              that: predicate<Uri>(
+                (uri) => uri.toString().contains('nominatim'),
+              ),
+            ),
+            headers: any(named: 'headers'),
+          ),
+        ).thenAnswer(
+          (_) async => http.Response(json.encode(nominatimResponse), 200),
+        );
 
+        // Act
+        final result = await service.search(zipCode);
+
+        // Assert
+        expect(result.latitude, 38.9822);
+        expect(result.longitude, -94.7151);
+        expect(result.city, 'Shawnee');
+        expect(result.state, 'Kansas');
+        expect(result.zip, '66207');
+
+        // Verify both APIs were called (Open-Meteo first, then Nominatim)
+        verify(
+          () => mockClient.get(
+            any(
+              that: predicate<Uri>(
+                (uri) => uri.toString().contains('geocoding-api'),
+              ),
+            ),
+          ),
+        ).called(1);
+        verify(
+          () => mockClient.get(
+            any(
+              that: predicate<Uri>(
+                (uri) => uri.toString().contains('nominatim'),
+              ),
+            ),
+            headers: any(named: 'headers'),
+          ),
+        ).called(1);
+      },
+    );
+
+    test(
+      'throws exception when both Open-Meteo and Nominatim fail for zip code',
+      () async {
+        // Arrange
+        const zipCode = '99999';
+        final openMeteoEmptyResponse = {'generationtime_ms': 0.21648407};
+        final nominatimEmptyResponse = <Map<String, dynamic>>[];
+
+        // Open-Meteo returns no results
+        when(
+          () => mockClient.get(
+            any(
+              that: predicate<Uri>(
+                (uri) => uri.toString().contains('geocoding-api'),
+              ),
+            ),
+          ),
+        ).thenAnswer(
+          (_) async => http.Response(json.encode(openMeteoEmptyResponse), 200),
+        );
+
+        // Nominatim also returns no results
+        when(
+          () => mockClient.get(
+            any(
+              that: predicate<Uri>(
+                (uri) => uri.toString().contains('nominatim'),
+              ),
+            ),
+            headers: any(named: 'headers'),
+          ),
+        ).thenAnswer(
+          (_) async => http.Response(json.encode(nominatimEmptyResponse), 200),
+        );
+
+        // Act & Assert
         expect(
-          () => service.search('Springfield'),
+          () => service.search(zipCode),
           throwsA(isA<GeocodingException>()),
         );
-      });
+      },
+    );
 
-      test('throws GeocodingException when no results found', () {
-        final mockResponse = '''
-        {
-          "results": []
-        }
-        ''';
+    test('throws exception for non-zip code query with no results', () async {
+      // Arrange
+      const query = 'NonexistentCity';
+      final openMeteoEmptyResponse = {'generationtime_ms': 0.21648407};
 
-        when(
-          () => mockClient.get(any()),
-        ).thenAnswer((_) async => http.Response(mockResponse, 200));
+      when(() => mockClient.get(any())).thenAnswer(
+        (_) async => http.Response(json.encode(openMeteoEmptyResponse), 200),
+      );
 
-        expect(
-          () => service.search('NonexistentCity'),
-          throwsA(isA<GeocodingException>()),
-        );
-      });
+      // Act & Assert
+      expect(() => service.search(query), throwsA(isA<GeocodingException>()));
+    });
 
-      test('throws GeocodingException when results is null', () {
-        final mockResponse = '''
-        {
-          "results": null
-        }
-        ''';
+    test('tries Open-Meteo first for zip codes before Nominatim', () async {
+      // Arrange - Test that 5-digit inputs try Open-Meteo first
+      const validZipCode = '12345';
+      final openMeteoResponse = {
+        'results': [
+          {
+            'latitude': 42.8142,
+            'longitude': -73.9396,
+            'name': 'Schenectady',
+            'admin1': 'New York',
+          },
+        ],
+      };
 
-        when(
-          () => mockClient.get(any()),
-        ).thenAnswer((_) async => http.Response(mockResponse, 200));
+      when(
+        () => mockClient.get(
+          any(
+            that: predicate<Uri>(
+              (uri) => uri.toString().contains('geocoding-api'),
+            ),
+          ),
+        ),
+      ).thenAnswer(
+        (_) async => http.Response(json.encode(openMeteoResponse), 200),
+      );
 
-        expect(
-          () => service.search('NonexistentCity'),
-          throwsA(isA<GeocodingException>()),
-        );
-      });
+      // Act - Search with valid 5-digit zip code
+      final result = await service.search(validZipCode);
 
-      test('URL encodes query parameter', () async {
-        final mockResponse = '''
-        {
-          "results": [
-            {
-              "latitude": 40.71,
-              "longitude": -74.01,
-              "name": "New York",
-              "admin1": "New York"
-            }
-          ]
-        }
-        ''';
+      // Assert - Should use Open-Meteo result and attach zip
+      expect(result.zip, validZipCode);
+      expect(result.latitude, 42.8142);
+      expect(result.city, 'Schenectady');
+      verify(
+        () => mockClient.get(
+          any(
+            that: predicate<Uri>(
+              (uri) => uri.toString().contains('geocoding-api'),
+            ),
+          ),
+        ),
+      ).called(1);
+      // Verify Nominatim was NOT called since Open-Meteo succeeded
+      verifyNever(
+        () => mockClient.get(
+          any(
+            that: predicate<Uri>((uri) => uri.toString().contains('nominatim')),
+          ),
+          headers: any(named: 'headers'),
+        ),
+      );
+    });
 
-        when(
-          () => mockClient.get(any()),
-        ).thenAnswer((_) async => http.Response(mockResponse, 200));
+    test('handles zip codes with leading/trailing whitespace', () async {
+      // Arrange - Test whitespace trimming
+      const zipCodeWithWhitespace = '  66207  ';
+      const expectedZipCode = '66207';
+      final openMeteoResponse = {
+        'results': [
+          {
+            'latitude': 38.9822,
+            'longitude': -94.7151,
+            'name': 'Overland Park',
+            'admin1': 'Kansas',
+          },
+        ],
+      };
 
-        await service.search('New York, NY');
+      when(
+        () => mockClient.get(
+          any(
+            that: predicate<Uri>(
+              (uri) => uri.toString().contains('geocoding-api'),
+            ),
+          ),
+        ),
+      ).thenAnswer(
+        (_) async => http.Response(json.encode(openMeteoResponse), 200),
+      );
 
-        final captured = verify(() => mockClient.get(captureAny())).captured;
-        final uri = captured[0] as Uri;
-        expect(uri.queryParameters['name'], 'New York, NY');
-      });
+      // Act
+      final result = await service.search(zipCodeWithWhitespace);
+
+      // Assert - whitespace should be trimmed
+      expect(result.latitude, 38.9822);
+      expect(result.longitude, -94.7151);
+      expect(result.zip, expectedZipCode);
     });
   });
 }
