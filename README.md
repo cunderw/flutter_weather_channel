@@ -4,6 +4,7 @@ A Flutter app that recreates the nostalgic look and feel of 1990s-2000s TV Weath
 
 ![Flutter](https://img.shields.io/badge/Flutter-3.x-blue?logo=flutter)
 ![License](https://img.shields.io/badge/License-MIT-green)
+![Tests](https://github.com/cunderw/flutter_weather_channel/workflows/Tests/badge.svg)
 
 ---
 
@@ -105,8 +106,23 @@ No API keys are required — Open-Meteo and RainViewer are free and open.
 ### Running Tests
 
 ```bash
+# Run all tests
 flutter test
+
+# Run specific test file
+flutter test test/services/weather_service_test.dart
+
+# Run with coverage
+flutter test --coverage
+
+# Run static analysis
+flutter analyze
+
+# Format code
+dart format .
 ```
+
+All tests run automatically on push and pull requests via GitHub Actions. See `.github/workflows/test.yml` for the CI configuration.
 
 ## APIs Used
 
