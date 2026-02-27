@@ -222,14 +222,14 @@ class CurrentConditionsPanel extends StatelessWidget {
 
 ### Theming
 
-- Dark navy gradient backgrounds (`#0a1931` → `#1a3a5c`)
-- Yellow (`#FFD700`) for temperatures
-- Cyan (`#00E5FF`) for location names
-- White (`#FFFFFF`) for general text
-- Gray (`#BBBBBB`) for secondary text
+- Dark navy gradient backgrounds (`Color(0xFF0A1931)` → `Color(0xFF1A3A5C)`)
+- Yellow (`Color(0xFFFFD700)`) for temperatures
+- Cyan (`Color(0xFF00E5FF)`) for location names
+- White (`Color(0xFFFFFFFF)`) for general text
+- Gray (`Color(0xFFBBBBBB)`) for secondary text
 - Google Fonts: "VT323" for LED/pixel readouts, "Roboto Condensed" for body
 - Semi-transparent dark overlays for info bars (`Color(0xCC0A1931)`)
-- Blue band (`#003399`) at bottom for forecast ticker
+- Blue band (`Color(0xFF003399)`) at bottom for forecast ticker
 - Use `WeatherColors` constants instead of hardcoded colors
 - Use `WeatherTextStyles` methods for consistent typography
 
