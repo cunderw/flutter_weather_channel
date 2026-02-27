@@ -56,48 +56,50 @@ void main() {
         {
           'lat': '38.9822',
           'lon': '-94.7151',
-          'address': {
-            'city': 'Shawnee',
-            'state': 'Kansas',
-          },
-        ];
+          'address': {'city': 'Shawnee', 'state': 'Kansas'},
+        },
+      ];
 
       // Nominatim returns results (no Open-Meteo call should be made)
-      when(() => mockClient.get(
-            any(
-              that: predicate<Uri>(
-                (uri) => uri.toString().contains('nominatim'),
-              ),
-            ),
-            headers: any(named: 'headers'),
+      when(
+        () => mockClient.get(
+          any(
+            that: predicate<Uri>((uri) => uri.toString().contains('nominatim')),
           ),
-        ).thenAnswer(
-          (_) async => http.Response(json.encode(nominatimResponse), 200),
-        );
+          headers: any(named: 'headers'),
+        ),
+      ).thenAnswer(
+        (_) async => http.Response(json.encode(nominatimResponse), 200),
+      );
 
-        // Act
-        final result = await service.search(zipCode);
+      // Act
+      final result = await service.search(zipCode);
 
-        // Assert
-        expect(result.latitude, 38.9822);
-        expect(result.longitude, -94.7151);
-        expect(result.city, 'Shawnee');
-        expect(result.state, 'Kansas');
-        expect(result.zip, '66207');
+      // Assert
+      expect(result.latitude, 38.9822);
+      expect(result.longitude, -94.7151);
+      expect(result.city, 'Shawnee');
+      expect(result.state, 'Kansas');
+      expect(result.zip, '66207');
 
       // Verify only Nominatim was called (Open-Meteo should be skipped)
-      verify(() => mockClient.get(
-            any(
-              that: predicate<Uri>((uri) => uri.toString().contains('nominatim')),
+      verify(
+        () => mockClient.get(
+          any(
+            that: predicate<Uri>((uri) => uri.toString().contains('nominatim')),
+          ),
+          headers: any(named: 'headers'),
+        ),
+      ).called(1);
+      verifyNever(
+        () => mockClient.get(
+          any(
+            that: predicate<Uri>(
+              (uri) => uri.toString().contains('geocoding-api'),
             ),
-            headers: any(named: 'headers'),
-          )).called(1);
-      verifyNever(() => mockClient.get(
-            any(
-              that: predicate<Uri>(
-                  (uri) => uri.toString().contains('geocoding-api')),
-            ),
-          ));
+          ),
+        ),
+      );
     });
 
     test('throws exception when Nominatim fails for zip code', () async {
@@ -144,34 +146,89 @@ void main() {
         },
       ];
 
-      when(() => mockClient.get(
-            any(
-              that: predicate<Uri>((uri) => uri.toString().contains('nominatim')),
-            ),
-            headers: any(named: 'headers'),
-          )).thenAnswer((_) async => http.Response(
-            json.encode(nominatimResponse),
-            200,
-          ));
+      when(
+        () => mockClient.get(
+          any(
+            that: predicate<Uri>((uri) => uri.toString().contains('nominatim')),
+          ),
+          headers: any(named: 'headers'),
+        ),
+      ).thenAnswer(
+        (_) async => http.Response(json.encode(nominatimResponse), 200),
+      );
 
       // Act - Search with valid 5-digit zip code
       final result = await service.search(validZipCode);
 
       // Assert - Should go directly to Nominatim (not Open-Meteo)
       expect(result.zip, validZipCode);
-      verify(() => mockClient.get(
-            any(
-              that: predicate<Uri>((uri) => uri.toString().contains('nominatim')),
-            ),
-            headers: any(named: 'headers'),
-          )).called(1);
+      verify(
+        () => mockClient.get(
+          any(
+            that: predicate<Uri>((uri) => uri.toString().contains('nominatim')),
+          ),
+          headers: any(named: 'headers'),
+        ),
+      ).called(1);
       // Verify Open-Meteo was NOT called
-      verifyNever(() => mockClient.get(
-            any(
-              that: predicate<Uri>(
-                  (uri) => uri.toString().contains('geocoding-api')),
+      verifyNever(
+        () => mockClient.get(
+          any(
+            that: predicate<Uri>(
+              (uri) => uri.toString().contains('geocoding-api'),
             ),
-          ));
+          ),
+        ),
+      );
+    });
+
+    test('handles zip codes with leading/trailing whitespace', () async {
+      // Arrange - Test whitespace trimming
+      const zipCodeWithWhitespace = '  66207  ';
+      const expectedZipCode = '66207';
+      final nominatimResponse = [
+        {
+          'lat': '38.9822',
+          'lon': '-94.7151',
+          'address': {'city': 'Shawnee', 'state': 'Kansas'},
+        },
+      ];
+
+      when(
+        () => mockClient.get(
+          any(
+            that: predicate<Uri>((uri) {
+              // Verify the postalcode parameter contains the trimmed zip
+              return uri.toString().contains('nominatim') &&
+                  uri.toString().contains('postalcode=$expectedZipCode');
+            }),
+          ),
+          headers: any(named: 'headers'),
+        ),
+      ).thenAnswer(
+        (_) async => http.Response(json.encode(nominatimResponse), 200),
+      );
+
+      // Act
+      final result = await service.search(zipCodeWithWhitespace);
+
+      // Assert - whitespace should be trimmed
+      expect(result.latitude, 38.9822);
+      expect(result.longitude, -94.7151);
+      expect(result.zip, expectedZipCode);
+
+      // Verify Nominatim was called with trimmed zip code
+      verify(
+        () => mockClient.get(
+          any(
+            that: predicate<Uri>((uri) {
+              return uri.toString().contains('nominatim') &&
+                  uri.toString().contains('postalcode=$expectedZipCode');
+            }),
+          ),
+          headers: any(named: 'headers'),
+        ),
+      ).called(1);
     });
   });
 }

@@ -14,15 +14,18 @@ class GeocodingService {
   /// Searches for a location by [query] (zip code or city name).
   /// Returns the first matching [Location], or throws on failure.
   Future<Location> search(String query) async {
+    // Trim whitespace once at the start
+    final trimmedQuery = query.trim();
+
     // If query is a US zip code, use Nominatim directly for accurate results
-    if (_isUSZipCode(query)) {
-      return await _searchByZipCode(query);
+    if (_isUSZipCode(trimmedQuery)) {
+      return await _searchByZipCode(trimmedQuery);
     }
 
     // Otherwise, use Open-Meteo for city/place name search
     final uri = Uri.parse(
       '${ApiConstants.openMeteoGeocodingUrl}'
-      '?name=${Uri.encodeComponent(query)}&count=1&language=en&format=json',
+      '?name=${Uri.encodeComponent(trimmedQuery)}&count=1&language=en&format=json',
     );
 
     final response = await _client.get(uri);
@@ -35,7 +38,7 @@ class GeocodingService {
     final results = data['results'] as List<dynamic>?;
 
     if (results == null || results.isEmpty) {
-      throw GeocodingException('No results found for "$query"');
+      throw GeocodingException('No results found for "$trimmedQuery"');
     }
 
     final first = results[0] as Map<String, dynamic>;
@@ -44,8 +47,7 @@ class GeocodingService {
 
   /// Checks if the query looks like a US zip code (5 digits).
   bool _isUSZipCode(String query) {
-    final trimmed = query.trim();
-    return RegExp(r'^\d{5}$').hasMatch(trimmed);
+    return RegExp(r'^\d{5}$').hasMatch(query);
   }
 
   /// Searches for a US zip code using the Nominatim API.
@@ -118,7 +120,7 @@ class GeocodingService {
         'Invalid coordinate types from Nominatim for zip "$zip": $e',
       );
     }
-    // Extract city and state from display_name or address
+    // Extract city and state from address object
     String city = 'Unknown';
     String state = '';
 
