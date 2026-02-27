@@ -20,9 +20,7 @@ void main() {
 
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: CurrentConditionsPanel(weather: weather),
-          ),
+          home: Scaffold(body: CurrentConditionsPanel(weather: weather)),
         ),
       );
 
@@ -45,9 +43,7 @@ void main() {
 
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: CurrentConditionsPanel(weather: weather),
-          ),
+          home: Scaffold(body: CurrentConditionsPanel(weather: weather)),
         ),
       );
 
@@ -69,9 +65,7 @@ void main() {
 
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: CurrentConditionsPanel(weather: weather),
-          ),
+          home: Scaffold(body: CurrentConditionsPanel(weather: weather)),
         ),
       );
 
@@ -96,9 +90,7 @@ void main() {
 
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: CurrentConditionsPanel(weather: weather),
-          ),
+          home: Scaffold(body: CurrentConditionsPanel(weather: weather)),
         ),
       );
 
@@ -121,9 +113,7 @@ void main() {
 
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: CurrentConditionsPanel(weather: weather),
-          ),
+          home: Scaffold(body: CurrentConditionsPanel(weather: weather)),
         ),
       );
 

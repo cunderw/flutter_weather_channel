@@ -35,8 +35,9 @@ void main() {
             zip: '62701',
           );
 
-          when(() => mockGeocodingService.search(any()))
-              .thenAnswer((_) async => mockLocation);
+          when(
+            () => mockGeocodingService.search(any()),
+          ).thenAnswer((_) async => mockLocation);
 
           return LocationBloc(geocodingService: mockGeocodingService);
         },
@@ -52,16 +53,20 @@ void main() {
       blocTest<LocationBloc, LocationState>(
         'emits [LocationLoading, LocationError] on failure',
         build: () {
-          when(() => mockGeocodingService.search(any()))
-              .thenThrow(GeocodingException('No results found'));
+          when(
+            () => mockGeocodingService.search(any()),
+          ).thenThrow(GeocodingException('No results found'));
 
           return LocationBloc(geocodingService: mockGeocodingService);
         },
         act: (bloc) => bloc.add(const ZipCodeSubmitted('99999')),
         expect: () => [
           const LocationLoading(),
-          isA<LocationError>()
-              .having((s) => s.message, 'message', contains('No results found')),
+          isA<LocationError>().having(
+            (s) => s.message,
+            'message',
+            contains('No results found'),
+          ),
         ],
       );
 
@@ -75,8 +80,9 @@ void main() {
             state: 'New York',
           );
 
-          when(() => mockGeocodingService.search(any()))
-              .thenAnswer((_) async => mockLocation);
+          when(
+            () => mockGeocodingService.search(any()),
+          ).thenAnswer((_) async => mockLocation);
 
           return LocationBloc(geocodingService: mockGeocodingService);
         },

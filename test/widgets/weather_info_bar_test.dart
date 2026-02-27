@@ -19,9 +19,7 @@ void main() {
     testWidgets('displays current date', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: WeatherInfoBar(locationName: 'Test City'),
-          ),
+          home: Scaffold(body: WeatherInfoBar(locationName: 'Test City')),
         ),
       );
 
@@ -41,9 +39,7 @@ void main() {
     testWidgets('displays live clock', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: WeatherInfoBar(locationName: 'Test City'),
-          ),
+          home: Scaffold(body: WeatherInfoBar(locationName: 'Test City')),
         ),
       );
 
@@ -61,9 +57,7 @@ void main() {
     testWidgets('updates clock every second', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: WeatherInfoBar(locationName: 'Test City'),
-          ),
+          home: Scaffold(body: WeatherInfoBar(locationName: 'Test City')),
         ),
       );
 
@@ -89,9 +83,7 @@ void main() {
     testWidgets('handles empty location name', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: WeatherInfoBar(locationName: ''),
-          ),
+          home: Scaffold(body: WeatherInfoBar(locationName: '')),
         ),
       );
 
@@ -100,13 +92,15 @@ void main() {
     });
 
     testWidgets('truncates long location names', (tester) async {
-      const longName = 'Very Long City Name That Should Be Truncated With Ellipsis';
+      const longName =
+          'Very Long City Name That Should Be Truncated With Ellipsis';
 
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
             body: SizedBox(
-              width: 800, // Sufficient width for date/time but location will truncate
+              width:
+                  800, // Sufficient width for date/time but location will truncate
               child: WeatherInfoBar(locationName: longName),
             ),
           ),
@@ -115,7 +109,7 @@ void main() {
 
       // The widget should render without overflow errors
       expect(tester.takeException(), isNull);
-      
+
       // Location name should be present (even if truncated)
       expect(find.textContaining('VERY LONG'), findsOneWidget);
     });

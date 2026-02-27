@@ -45,9 +45,7 @@ class WeatherTextStyles {
       fontSize: size,
       color: color,
       letterSpacing: 2,
-      shadows: [
-        Shadow(color: color.withValues(alpha: 0.5), blurRadius: 6),
-      ],
+      shadows: [Shadow(color: color.withValues(alpha: 0.5), blurRadius: 6)],
     );
   }
 
@@ -61,9 +59,7 @@ class WeatherTextStyles {
       fontSize: size + 4, // VT323 reads smaller, bump slightly
       color: color,
       fontWeight: weight,
-      shadows: [
-        Shadow(color: color.withValues(alpha: 0.3), blurRadius: 2),
-      ],
+      shadows: [Shadow(color: color.withValues(alpha: 0.3), blurRadius: 2)],
     );
   }
 
@@ -94,9 +90,7 @@ class WeatherTextStyles {
       color: color,
       fontWeight: FontWeight.w500,
       letterSpacing: 1,
-      shadows: [
-        Shadow(color: color.withValues(alpha: 0.4), blurRadius: 3),
-      ],
+      shadows: [Shadow(color: color.withValues(alpha: 0.4), blurRadius: 3)],
     );
   }
 }

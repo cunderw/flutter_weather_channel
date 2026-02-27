@@ -35,10 +35,7 @@ void main() {
       });
 
       test('uses "Unknown" when name is missing', () {
-        final json = {
-          'latitude': 0.0,
-          'longitude': 0.0,
-        };
+        final json = {'latitude': 0.0, 'longitude': 0.0};
         final location = Location.fromJson(json);
 
         expect(location.city, 'Unknown');
@@ -69,11 +66,7 @@ void main() {
       });
 
       test('returns only city when state is not provided', () {
-        const location = Location(
-          latitude: 0,
-          longitude: 0,
-          city: 'TestCity',
-        );
+        const location = Location(latitude: 0, longitude: 0, city: 'TestCity');
 
         expect(location.displayName, 'TestCity');
       });

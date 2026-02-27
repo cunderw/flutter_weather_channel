@@ -52,9 +52,9 @@ void main() {
         }
         ''';
 
-        when(() => mockClient.get(any())).thenAnswer(
-          (_) async => http.Response(mockResponse, 200),
-        );
+        when(
+          () => mockClient.get(any()),
+        ).thenAnswer((_) async => http.Response(mockResponse, 200));
 
         final result = await service.fetchWeather(lat: 39.78, lon: -89.65);
 
@@ -65,9 +65,9 @@ void main() {
       });
 
       test('throws WeatherException on non-200 status', () {
-        when(() => mockClient.get(any())).thenAnswer(
-          (_) async => http.Response('Error', 500),
-        );
+        when(
+          () => mockClient.get(any()),
+        ).thenAnswer((_) async => http.Response('Error', 500));
 
         expect(
           () => service.fetchWeather(lat: 39.78, lon: -89.65),
@@ -76,9 +76,9 @@ void main() {
       });
 
       test('throws WeatherException on invalid JSON', () {
-        when(() => mockClient.get(any())).thenAnswer(
-          (_) async => http.Response('Not JSON', 200),
-        );
+        when(
+          () => mockClient.get(any()),
+        ).thenAnswer((_) async => http.Response('Not JSON', 200));
 
         expect(
           () => service.fetchWeather(lat: 39.78, lon: -89.65),
@@ -102,9 +102,9 @@ void main() {
         }
         ''';
 
-        when(() => mockClient.get(any())).thenAnswer(
-          (_) async => http.Response(mockRadarResponse, 200),
-        );
+        when(
+          () => mockClient.get(any()),
+        ).thenAnswer((_) async => http.Response(mockRadarResponse, 200));
 
         final url = await service.fetchRadarUrl(lat: 39.78, lon: -89.65);
 
@@ -114,9 +114,9 @@ void main() {
       });
 
       test('returns null on non-200 status', () async {
-        when(() => mockClient.get(any())).thenAnswer(
-          (_) async => http.Response('Error', 500),
-        );
+        when(
+          () => mockClient.get(any()),
+        ).thenAnswer((_) async => http.Response('Error', 500));
 
         final url = await service.fetchRadarUrl(lat: 39.78, lon: -89.65);
 
@@ -132,9 +132,9 @@ void main() {
         }
         ''';
 
-        when(() => mockClient.get(any())).thenAnswer(
-          (_) async => http.Response(mockRadarResponse, 200),
-        );
+        when(
+          () => mockClient.get(any()),
+        ).thenAnswer((_) async => http.Response(mockRadarResponse, 200));
 
         final url = await service.fetchRadarUrl(lat: 39.78, lon: -89.65);
 
@@ -142,9 +142,9 @@ void main() {
       });
 
       test('returns null on parse exception', () async {
-        when(() => mockClient.get(any())).thenAnswer(
-          (_) async => http.Response('Not JSON', 200),
-        );
+        when(
+          () => mockClient.get(any()),
+        ).thenAnswer((_) async => http.Response('Not JSON', 200));
 
         final url = await service.fetchRadarUrl(lat: 39.78, lon: -89.65);
 

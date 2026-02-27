@@ -37,7 +37,11 @@ void main() {
 
         for (final code in testCodes) {
           final description = WeatherIcons.description(code);
-          expect(description, isNot('Unknown'), reason: 'Code $code should have a description');
+          expect(
+            description,
+            isNot('Unknown'),
+            reason: 'Code $code should have a description',
+          );
           expect(description, isNotEmpty);
         }
       });
@@ -65,7 +69,11 @@ void main() {
 
         // Icons should be distinct for different weather types
         final icons = {clearIcon, cloudyIcon, rainIcon, snowIcon, thunderIcon};
-        expect(icons.length, greaterThan(1), reason: 'Different weather types should have different icons');
+        expect(
+          icons.length,
+          greaterThan(1),
+          reason: 'Different weather types should have different icons',
+        );
       });
     });
   });

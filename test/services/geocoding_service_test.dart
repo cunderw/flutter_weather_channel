@@ -36,9 +36,9 @@ void main() {
         }
         ''';
 
-        when(() => mockClient.get(any())).thenAnswer(
-          (_) async => http.Response(mockResponse, 200),
-        );
+        when(
+          () => mockClient.get(any()),
+        ).thenAnswer((_) async => http.Response(mockResponse, 200));
 
         final location = await service.search('Springfield');
 
@@ -49,9 +49,9 @@ void main() {
       });
 
       test('throws GeocodingException on non-200 status', () {
-        when(() => mockClient.get(any())).thenAnswer(
-          (_) async => http.Response('Error', 500),
-        );
+        when(
+          () => mockClient.get(any()),
+        ).thenAnswer((_) async => http.Response('Error', 500));
 
         expect(
           () => service.search('Springfield'),
@@ -66,9 +66,9 @@ void main() {
         }
         ''';
 
-        when(() => mockClient.get(any())).thenAnswer(
-          (_) async => http.Response(mockResponse, 200),
-        );
+        when(
+          () => mockClient.get(any()),
+        ).thenAnswer((_) async => http.Response(mockResponse, 200));
 
         expect(
           () => service.search('NonexistentCity'),
@@ -83,9 +83,9 @@ void main() {
         }
         ''';
 
-        when(() => mockClient.get(any())).thenAnswer(
-          (_) async => http.Response(mockResponse, 200),
-        );
+        when(
+          () => mockClient.get(any()),
+        ).thenAnswer((_) async => http.Response(mockResponse, 200));
 
         expect(
           () => service.search('NonexistentCity'),
@@ -107,9 +107,9 @@ void main() {
         }
         ''';
 
-        when(() => mockClient.get(any())).thenAnswer(
-          (_) async => http.Response(mockResponse, 200),
-        );
+        when(
+          () => mockClient.get(any()),
+        ).thenAnswer((_) async => http.Response(mockResponse, 200));
 
         await service.search('New York, NY');
 

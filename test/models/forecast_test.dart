@@ -77,7 +77,11 @@ void main() {
       test('parses hourly and daily data correctly', () {
         final json = {
           'hourly': {
-            'time': ['2026-02-25T12:00', '2026-02-25T13:00', '2026-02-25T14:00'],
+            'time': [
+              '2026-02-25T12:00',
+              '2026-02-25T13:00',
+              '2026-02-25T14:00',
+            ],
             'temperature_2m': [72.0, 74.0, 76.0],
             'weather_code': [2, 3, 1],
             'precipitation_probability': [10, 20, 5],

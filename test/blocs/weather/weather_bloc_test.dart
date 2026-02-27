@@ -60,46 +60,60 @@ void main() {
             ],
           );
 
-          when(() => mockWeatherService.fetchWeather(
-                lat: any(named: 'lat'),
-                lon: any(named: 'lon'),
-              )).thenAnswer(
+          when(
+            () => mockWeatherService.fetchWeather(
+              lat: any(named: 'lat'),
+              lon: any(named: 'lon'),
+            ),
+          ).thenAnswer(
             (_) async => (weather: mockWeather, forecast: mockForecast),
           );
 
-          when(() => mockWeatherService.fetchRadarUrl(
-                lat: any(named: 'lat'),
-                lon: any(named: 'lon'),
-              )).thenAnswer(
-            (_) async => 'https://example.com/radar.png',
-          );
+          when(
+            () => mockWeatherService.fetchRadarUrl(
+              lat: any(named: 'lat'),
+              lon: any(named: 'lon'),
+            ),
+          ).thenAnswer((_) async => 'https://example.com/radar.png');
 
           return WeatherBloc(weatherService: mockWeatherService);
         },
-        act: (bloc) => bloc.add(const FetchWeather(latitude: 39.78, longitude: -89.65)),
+        act: (bloc) =>
+            bloc.add(const FetchWeather(latitude: 39.78, longitude: -89.65)),
         expect: () => [
           const WeatherLoading(),
           isA<WeatherLoaded>()
               .having((s) => s.weather.temperature, 'temperature', 72.5)
               .having((s) => s.forecast.hourly.length, 'hourly count', 1)
-              .having((s) => s.radarUrl, 'radarUrl', 'https://example.com/radar.png'),
+              .having(
+                (s) => s.radarUrl,
+                'radarUrl',
+                'https://example.com/radar.png',
+              ),
         ],
       );
 
       blocTest<WeatherBloc, WeatherState>(
         'emits [WeatherLoading, WeatherError] on fetchWeather failure',
         build: () {
-          when(() => mockWeatherService.fetchWeather(
-                lat: any(named: 'lat'),
-                lon: any(named: 'lon'),
-              )).thenThrow(WeatherException('API error'));
+          when(
+            () => mockWeatherService.fetchWeather(
+              lat: any(named: 'lat'),
+              lon: any(named: 'lon'),
+            ),
+          ).thenThrow(WeatherException('API error'));
 
           return WeatherBloc(weatherService: mockWeatherService);
         },
-        act: (bloc) => bloc.add(const FetchWeather(latitude: 39.78, longitude: -89.65)),
+        act: (bloc) =>
+            bloc.add(const FetchWeather(latitude: 39.78, longitude: -89.65)),
         expect: () => [
           const WeatherLoading(),
-          isA<WeatherError>().having((s) => s.message, 'message', contains('API error')),
+          isA<WeatherError>().having(
+            (s) => s.message,
+            'message',
+            contains('API error'),
+          ),
         ],
       );
 
@@ -118,28 +132,28 @@ void main() {
             weatherCode: 2,
           );
 
-          final mockForecast = Forecast(
-            hourly: [],
-            daily: [],
-          );
+          final mockForecast = Forecast(hourly: [], daily: []);
 
-          when(() => mockWeatherService.fetchWeather(
-                lat: any(named: 'lat'),
-                lon: any(named: 'lon'),
-              )).thenAnswer(
+          when(
+            () => mockWeatherService.fetchWeather(
+              lat: any(named: 'lat'),
+              lon: any(named: 'lon'),
+            ),
+          ).thenAnswer(
             (_) async => (weather: mockWeather, forecast: mockForecast),
           );
 
-          when(() => mockWeatherService.fetchRadarUrl(
-                lat: any(named: 'lat'),
-                lon: any(named: 'lon'),
-              )).thenAnswer(
-            (_) async => null,
-          );
+          when(
+            () => mockWeatherService.fetchRadarUrl(
+              lat: any(named: 'lat'),
+              lon: any(named: 'lon'),
+            ),
+          ).thenAnswer((_) async => null);
 
           return WeatherBloc(weatherService: mockWeatherService);
         },
-        act: (bloc) => bloc.add(const FetchWeather(latitude: 39.78, longitude: -89.65)),
+        act: (bloc) =>
+            bloc.add(const FetchWeather(latitude: 39.78, longitude: -89.65)),
         expect: () => [
           const WeatherLoading(),
           isA<WeatherLoaded>().having((s) => s.radarUrl, 'radarUrl', isNull),
@@ -163,36 +177,40 @@ void main() {
 
         final mockForecast = Forecast(hourly: [], daily: []);
 
-        when(() => mockWeatherService.fetchWeather(
-              lat: any(named: 'lat'),
-              lon: any(named: 'lon'),
-            )).thenAnswer(
+        when(
+          () => mockWeatherService.fetchWeather(
+            lat: any(named: 'lat'),
+            lon: any(named: 'lon'),
+          ),
+        ).thenAnswer(
           (_) async => (weather: mockWeather, forecast: mockForecast),
         );
 
-        when(() => mockWeatherService.fetchRadarUrl(
-              lat: any(named: 'lat'),
-              lon: any(named: 'lon'),
-            )).thenAnswer(
-          (_) async => 'https://example.com/radar.png',
-        );
+        when(
+          () => mockWeatherService.fetchRadarUrl(
+            lat: any(named: 'lat'),
+            lon: any(named: 'lon'),
+          ),
+        ).thenAnswer((_) async => 'https://example.com/radar.png');
 
         final bloc = WeatherBloc(weatherService: mockWeatherService);
-        
+
         // First fetch to set location
         bloc.add(const FetchWeather(latitude: 39.78, longitude: -89.65));
         await Future.delayed(const Duration(milliseconds: 200));
-        
+
         // Now refresh should work
         bloc.add(const RefreshWeather());
         await Future.delayed(const Duration(milliseconds: 200));
-        
+
         // Verify the service was called twice
-        verify(() => mockWeatherService.fetchWeather(
-              lat: any(named: 'lat'),
-              lon: any(named: 'lon'),
-            )).called(2);
-            
+        verify(
+          () => mockWeatherService.fetchWeather(
+            lat: any(named: 'lat'),
+            lon: any(named: 'lon'),
+          ),
+        ).called(2);
+
         await bloc.close();
       });
 
@@ -213,19 +231,21 @@ void main() {
 
           final mockForecast = Forecast(hourly: [], daily: []);
 
-          when(() => mockWeatherService.fetchWeather(
-                lat: any(named: 'lat'),
-                lon: any(named: 'lon'),
-              )).thenAnswer(
+          when(
+            () => mockWeatherService.fetchWeather(
+              lat: any(named: 'lat'),
+              lon: any(named: 'lon'),
+            ),
+          ).thenAnswer(
             (_) async => (weather: mockWeather, forecast: mockForecast),
           );
 
-          when(() => mockWeatherService.fetchRadarUrl(
-                lat: any(named: 'lat'),
-                lon: any(named: 'lon'),
-              )).thenAnswer(
-            (_) async => 'https://example.com/radar.png',
-          );
+          when(
+            () => mockWeatherService.fetchRadarUrl(
+              lat: any(named: 'lat'),
+              lon: any(named: 'lon'),
+            ),
+          ).thenAnswer((_) async => 'https://example.com/radar.png');
 
           return WeatherBloc(weatherService: mockWeatherService);
         },
@@ -249,10 +269,12 @@ void main() {
           bloc.add(const FetchWeather(latitude: 39.78, longitude: -89.65));
           return Future.delayed(const Duration(milliseconds: 100)).then((_) {
             // Now mock failure
-            when(() => mockWeatherService.fetchWeather(
-                  lat: any(named: 'lat'),
-                  lon: any(named: 'lon'),
-                )).thenThrow(WeatherException('Network error'));
+            when(
+              () => mockWeatherService.fetchWeather(
+                lat: any(named: 'lat'),
+                lon: any(named: 'lon'),
+              ),
+            ).thenThrow(WeatherException('Network error'));
 
             bloc.add(const RefreshWeather());
           });

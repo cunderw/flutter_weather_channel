@@ -15,9 +15,7 @@ void main() {
       'showPanel changes to specified panel',
       build: () => DisplayCubit(),
       act: (cubit) => cubit.showPanel(ActivePanel.radar),
-      expect: () => [
-        const DisplayState(panel: ActivePanel.radar),
-      ],
+      expect: () => [const DisplayState(panel: ActivePanel.radar)],
     );
 
     blocTest<DisplayCubit, DisplayState>(
@@ -37,14 +35,14 @@ void main() {
 
     test('startCycling and stopCycling manage timer lifecycle', () {
       final cubit = DisplayCubit();
-      
+
       // Start cycling
       cubit.startCycling();
       expect(cubit.state.panel, ActivePanel.currentConditions);
-      
+
       // Stop cycling
       cubit.stopCycling();
-      
+
       cubit.close();
     });
 
