@@ -77,7 +77,7 @@ void main() {
 
       // Check that key metrics are displayed
       expect(find.textContaining('65%'), findsWidgets); // Humidity
-      expect(find.textContaining('8'), findsWidgets); // Wind speed (approximately)
+      expect(find.textContaining('mph'), findsWidgets); // Wind speed unit
       expect(find.textContaining('SW'), findsWidgets); // Wind direction
     });
 

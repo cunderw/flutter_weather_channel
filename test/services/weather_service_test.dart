@@ -5,7 +5,13 @@ import 'package:flutter_weather_channel/services/weather_service.dart';
 
 class MockClient extends Mock implements http.Client {}
 
+class FakeUri extends Fake implements Uri {}
+
 void main() {
+  setUpAll(() {
+    registerFallbackValue(FakeUri());
+  });
+
   group('WeatherService', () {
     late WeatherService service;
     late MockClient mockClient;

@@ -5,7 +5,13 @@ import 'package:flutter_weather_channel/services/geocoding_service.dart';
 
 class MockClient extends Mock implements http.Client {}
 
+class FakeUri extends Fake implements Uri {}
+
 void main() {
+  setUpAll(() {
+    registerFallbackValue(FakeUri());
+  });
+
   group('GeocodingService', () {
     late GeocodingService service;
     late MockClient mockClient;

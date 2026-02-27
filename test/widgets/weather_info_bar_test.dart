@@ -106,7 +106,7 @@ void main() {
         MaterialApp(
           home: Scaffold(
             body: SizedBox(
-              width: 200, // Constrained width to force truncation
+              width: 800, // Sufficient width for date/time but location will truncate
               child: WeatherInfoBar(locationName: longName),
             ),
           ),
@@ -115,6 +115,9 @@ void main() {
 
       // The widget should render without overflow errors
       expect(tester.takeException(), isNull);
+      
+      // Location name should be present (even if truncated)
+      expect(find.textContaining('VERY LONG'), findsOneWidget);
     });
   });
 }

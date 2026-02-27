@@ -34,6 +34,9 @@ void main() {
           ),
         ),
       );
+      
+      // Pump one frame to let postFrameCallback execute
+      await tester.pump(Duration.zero);
 
       // Check that forecast data is rendered
       expect(find.textContaining('72°'), findsWidgets);
@@ -49,6 +52,8 @@ void main() {
           ),
         ),
       );
+      
+      await tester.pump(Duration.zero);
 
       // Should render without errors
       expect(tester.takeException(), isNull);
@@ -77,6 +82,8 @@ void main() {
           ),
         ),
       );
+      
+      await tester.pump(Duration.zero);
 
       // Check that times are displayed (12 PM and 3 PM)
       expect(find.textContaining('12'), findsWidgets);
@@ -100,6 +107,8 @@ void main() {
           ),
         ),
       );
+      
+      await tester.pump(Duration.zero);
 
       // Check that an icon is rendered
       expect(find.byType(Icon), findsWidgets);
@@ -123,6 +132,8 @@ void main() {
           ),
         ),
       );
+      
+      await tester.pump(Duration.zero);
 
       // Should have a scroll controller
       expect(find.byType(SingleChildScrollView), findsOneWidget);
