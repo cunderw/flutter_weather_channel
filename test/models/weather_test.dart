@@ -127,7 +127,7 @@ void main() {
           feelsLike: 70.0,
           humidity: 65,
           windSpeed: 8.5,
-          windDirection: 11, // Just past N threshold
+          windDirection: 11, // Within N range (348.75-11.25°)
           pressure: 1013.0,
           uvIndex: 5.2,
           visibility: 16093.0,
@@ -141,7 +141,7 @@ void main() {
           feelsLike: 70.0,
           humidity: 65,
           windSpeed: 8.5,
-          windDirection: 22, // Should be NNE
+          windDirection: 22, // Within NNE range (11.25-33.75°)
           pressure: 1013.0,
           uvIndex: 5.2,
           visibility: 16093.0,
