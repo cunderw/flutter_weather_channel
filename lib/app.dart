@@ -7,6 +7,7 @@ import 'config/theme.dart';
 import 'models/location.dart';
 import 'screens/location_prompt_screen.dart';
 import 'screens/tv_weather_screen.dart';
+import 'services/audio_service.dart';
 import 'services/geocoding_service.dart';
 import 'services/weather_service.dart';
 
@@ -17,6 +18,7 @@ class WeatherChannelApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiRepositoryProvider(
       providers: [
+        RepositoryProvider(create: (_) => AudioService()),
         RepositoryProvider(create: (_) => GeocodingService()),
         RepositoryProvider(create: (_) => WeatherService()),
       ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../blocs/display/display_cubit.dart';
 import '../blocs/weather/weather_bloc.dart';
@@ -7,6 +8,7 @@ import '../blocs/weather/weather_event.dart';
 import '../blocs/weather/weather_state.dart';
 import '../config/theme.dart';
 import '../models/location.dart';
+import '../services/audio_service.dart';
 import '../widgets/content_cycler.dart';
 import '../widgets/forecast_ticker.dart';
 import '../widgets/tv_frame.dart';
@@ -30,6 +32,9 @@ class _TvWeatherScreenState extends State<TvWeatherScreen> {
     // Request immersive full-screen for the TV experience.
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
+    // Start background music.
+    context.read<AudioService>().play();
+
     // Fetch weather data.
     context.read<WeatherBloc>().add(
       FetchWeather(
@@ -44,6 +49,8 @@ class _TvWeatherScreenState extends State<TvWeatherScreen> {
 
   @override
   void dispose() {
+    // Stop background music.
+    context.read<AudioService>().stop();
     // Restore system UI when leaving.
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     context.read<DisplayCubit>().stopCycling();

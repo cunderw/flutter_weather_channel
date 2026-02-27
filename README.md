@@ -20,10 +20,10 @@ A Flutter app that recreates the nostalgic look and feel of 1990s-2000s TV Weath
 - **Live clock** — Top info bar with city name, date, and real-time clock
 - **Retro theming** — Dark navy gradients, VT323 pixel font, Weather Channel color palette
 - **Auto-refresh** — Weather data refreshes every 10 minutes in the background
+- **Background music** — Looping smooth jazz / lo-fi background track for authentic Weather Channel ambiance
 
 ## Planned Features
 
-- [ ] Background smooth jazz audio (royalty-free lo-fi Weather Channel music)
 - [ ] 7-day extended forecast panel added to the content cycle
 - [ ] Severe weather alerts with red banner overlay
 - [ ] Multiple saved locations with quick switching
@@ -43,6 +43,7 @@ A Flutter app that recreates the nostalgic look and feel of 1990s-2000s TV Weath
 | Radar            | [RainViewer](https://www.rainviewer.com/api.html) (free composite tiles) |
 | Location         | `geolocator` + `geocoding` + Open-Meteo Geocoding API                    |
 | Fonts            | Google Fonts — VT323, Roboto Condensed                                   |
+| Audio            | `audioplayers` — looping background music from bundled asset             |
 
 ### Folder Structure
 
@@ -57,6 +58,7 @@ lib/
 │   ├── forecast.dart             Hourly/daily forecast model
 │   └── location.dart             Location model
 ├── services/
+│   ├── audio_service.dart        Background music playback
 │   ├── weather_service.dart      Open-Meteo API client
 │   ├── location_service.dart     Geolocator wrapper
 │   └── geocoding_service.dart    Zip -> coordinates
