@@ -315,12 +315,14 @@ class TimingConstants {
 
 ### Import Order
 
-Organize imports in this specific order, separated by blank lines:
+Organize imports in this specific order, with blank lines separating each group:
 
 1. Dart SDK imports (e.g., `dart:async`, `dart:convert`)
 2. Flutter imports (e.g., `package:flutter/material.dart`)
 3. Package imports - alphabetical (e.g., `package:equatable/equatable.dart`)
 4. Relative imports - alphabetical (e.g., `../config/theme.dart`)
+
+Within each group, imports are consecutive (no blank lines between them).
 
 **Example:**
 ```dart
