@@ -312,3 +312,73 @@ class TimingConstants {
 - Use meaningful variable names
 - Add doc comments for public APIs
 - Keep files under 300 lines when possible
+
+### Import Order
+
+Organize imports in this specific order, with blank lines separating each group:
+
+1. Dart SDK imports (e.g., `dart:async`, `dart:convert`)
+2. Flutter imports (e.g., `package:flutter/material.dart`)
+3. Package imports - alphabetical (e.g., `package:equatable/equatable.dart`)
+4. Relative imports - alphabetical (e.g., `../config/theme.dart`)
+
+Within each group, imports are consecutive (no blank lines between them).
+
+**Example:**
+```dart
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
+
+import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+import '../config/theme.dart';
+import '../models/weather.dart';
+import '../utils/constants.dart';
+```
+
+### Build & Test Commands
+
+**Setup:**
+```bash
+flutter pub get                    # Install dependencies
+```
+
+**Code Quality:**
+```bash
+flutter analyze                    # Run static analysis (must pass)
+dart format lib/ test/             # Format code before committing
+```
+
+**Testing:**
+```bash
+flutter test                       # Run all tests
+flutter test path/to/test.dart     # Run specific test file
+```
+
+**Running:**
+```bash
+flutter run                        # Run on connected device/emulator
+```
+
+### Git Commit Format
+
+Use conventional commit format:
+
+```
+type: short description
+
+Optional longer explanation. Wrap at 72 characters.
+```
+
+**Types:**
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation only
+- `style`: Formatting changes
+- `refactor`: Code restructure without behavior change
+- `test`: Adding/updating tests
+- `chore`: Maintenance (dependencies, build, etc.)
