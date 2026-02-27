@@ -87,12 +87,12 @@ class GeocodingService {
 
     final address = json['address'] as Map<String, dynamic>?;
     if (address != null) {
-      city = (address['city'] ??
-          address['town'] ??
-          address['village'] ??
-          address['hamlet'] ??
-          'Unknown') as String;
-      state = (address['state'] ?? '') as String;
+      city = (address['city'] as String?) ??
+          (address['town'] as String?) ??
+          (address['village'] as String?) ??
+          (address['hamlet'] as String?) ??
+          'Unknown';
+      state = (address['state'] as String?) ?? '';
     }
 
     return Location(

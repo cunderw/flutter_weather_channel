@@ -154,21 +154,55 @@ void main() {
       expect(() => service.search(query), throwsA(isA<GeocodingException>()));
     });
 
-    test('correctly identifies US zip codes', () {
-      // The _isUSZipCode method is private, so we test it indirectly
-      // by ensuring that 5-digit inputs trigger the Nominatim fallback
+    test('recognizes various formats as zip codes or city names', () async {
+      // Arrange - Test that 5-digit inputs trigger Nominatim fallback
+      const validZipCode = '12345';
+      final openMeteoEmptyResponse = {'generationtime_ms': 0.21648407};
+      final nominatimResponse = [
+        {
+          'lat': '42.8142',
+          'lon': '-73.9396',
+          'address': {'city': 'Schenectady', 'state': 'New York'},
+        },
+      ];
 
-      // This is implicitly tested by the other tests, but we can
-      // verify the pattern matching works for various inputs
-      expect('12345'.trim(), matches(RegExp(r'^\d{5}$')));
-      expect('66207'.trim(), matches(RegExp(r'^\d{5}$')));
-      expect('00000'.trim(), matches(RegExp(r'^\d{5}$')));
+      when(
+        () => mockClient.get(
+          any(
+            that: predicate<Uri>(
+              (uri) => uri.toString().contains('geocoding-api'),
+            ),
+          ),
+        ),
+      ).thenAnswer(
+        (_) async => http.Response(json.encode(openMeteoEmptyResponse), 200),
+      );
 
-      // These should NOT match
-      expect('1234'.trim(), isNot(matches(RegExp(r'^\d{5}$'))));
-      expect('123456'.trim(), isNot(matches(RegExp(r'^\d{5}$'))));
-      expect('abcde'.trim(), isNot(matches(RegExp(r'^\d{5}$'))));
-      expect('Chicago'.trim(), isNot(matches(RegExp(r'^\d{5}$'))));
+      when(
+        () => mockClient.get(
+          any(
+            that: predicate<Uri>((uri) => uri.toString().contains('nominatim')),
+          ),
+          headers: any(named: 'headers'),
+        ),
+      ).thenAnswer(
+        (_) async => http.Response(json.encode(nominatimResponse), 200),
+      );
+
+      // Act - Search with valid 5-digit zip code
+      final result = await service.search(validZipCode);
+
+      // Assert - Should successfully use Nominatim fallback
+      expect(result.zip, validZipCode);
+      // Verify Nominatim was called (indicating zip code was recognized)
+      verify(
+        () => mockClient.get(
+          any(
+            that: predicate<Uri>((uri) => uri.toString().contains('nominatim')),
+          ),
+          headers: any(named: 'headers'),
+        ),
+      ).called(1);
     });
   });
 }
