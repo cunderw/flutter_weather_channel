@@ -9,6 +9,10 @@ class ApiConstants {
   static const String openMeteoGeocodingUrl =
       'https://geocoding-api.open-meteo.com/v1/search';
 
+  /// Nominatim search API base URL (for zip code fallback).
+  static const String nominatimSearchUrl =
+      'https://nominatim.openstreetmap.org/search';
+
   /// RainViewer weather-maps metadata endpoint.
   static const String rainViewerMapsUrl =
       'https://api.rainviewer.com/public/weather-maps.json';
