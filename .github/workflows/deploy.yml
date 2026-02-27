@@ -8,10 +8,38 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       deployments: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get latest release version
+        id: latest_version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          LATEST_TAG=$(gh release view --json tagName -q '.tagName' 2>/dev/null || echo "v0.0.0")
+          echo "tag=$LATEST_TAG" >> "$GITHUB_OUTPUT"
+          echo "Latest release: $LATEST_TAG"
+
+      - name: Bump patch version
+        id: bump
+        run: |
+          VERSION="${{ steps.latest_version.outputs.tag }}"
+          VERSION="${VERSION#v}"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          PATCH=$((PATCH + 1))
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          echo "New version: $NEW_VERSION"
+
+      - name: Update pubspec.yaml version
+        run: |
+          NEW_VERSION="${{ steps.bump.outputs.version }}"
+          sed -i "s/^version: .*/version: $NEW_VERSION+${{ github.run_number }}/" pubspec.yaml
 
       - uses: subosito/flutter-action@v2
         with:
@@ -30,3 +58,28 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy build/web --project-name=flutter-weather-channel
+
+      - name: Generate release notes
+        id: notes
+        run: |
+          PREVIOUS_TAG="${{ steps.latest_version.outputs.tag }}"
+          NEW_TAG="${{ steps.bump.outputs.tag }}"
+          {
+            echo 'notes<<EOF'
+            if git rev-parse "$PREVIOUS_TAG" >/dev/null 2>&1; then
+              git log "$PREVIOUS_TAG"..HEAD --pretty=format:"- %s (%h)" --no-merges
+            else
+              git log --pretty=format:"- %s (%h)" --no-merges -20
+            fi
+            echo ''
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.bump.outputs.tag }}" \
+            --title "${{ steps.bump.outputs.tag }}" \
+            --notes "${{ steps.notes.outputs.notes }}" \
+            --target "${{ github.sha }}"
